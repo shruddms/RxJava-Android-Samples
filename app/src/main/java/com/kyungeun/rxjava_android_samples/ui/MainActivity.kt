@@ -1,8 +1,10 @@
 package com.kyungeun.rxjava_android_samples.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView.OnEditorActionListener
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -25,7 +27,7 @@ open class MainActivity : AppCompatActivity(), ReposAdapter.RepoItemListener {
     private lateinit var baseApiService: BaseApiService
 
     private lateinit var mRepoAdapter: ReposAdapter
-    private var repoList: ArrayList<Repo> = ArrayList()
+    private lateinit var repoList: ArrayList<Repo>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +45,15 @@ open class MainActivity : AppCompatActivity(), ReposAdapter.RepoItemListener {
         binding.etUsername.setOnEditorActionListener(OnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val username: String = binding.etUsername.text.toString()
-                requestRepos(username)
+                if(username.isNotEmpty()) {
+                    requestRepos(username)
+                } else {
+                    Toast.makeText(this@MainActivity, "Please enter user name", Toast.LENGTH_SHORT).show()
+                }
+                val inputMethodManager: InputMethodManager =
+                    getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(binding.etUsername.windowToken, 0)
+
                 return@OnEditorActionListener true
             }
             false
@@ -52,6 +62,7 @@ open class MainActivity : AppCompatActivity(), ReposAdapter.RepoItemListener {
 
     open fun requestRepos(username: String) {
         binding.pbLoading.visibility = View.VISIBLE
+        repoList = ArrayList()
 
         val disposable = baseApiService.requestRepos(username)
             .subscribeOn(Schedulers.io())
@@ -59,12 +70,13 @@ open class MainActivity : AppCompatActivity(), ReposAdapter.RepoItemListener {
             .subscribe({ //onNext
                 for (i in it.indices) {
                     val name: String = it[i].name
-                    val description: String = it[i].description ?: ""
-
-                    repoList.add(Repo(name, description))
+                    val description: String? = it[i].description
+                    val htmlUrl: String = it[i].html_url
+                    repoList.add(Repo(name, description, htmlUrl))
                 }
             }, { //onError
-                Toast.makeText(this@MㄹainActivity, it.message, Toast.LENGTH_SHORT).show()
+                binding.pbLoading.visibility = View.GONE
+                Toast.makeText(this@MainActivity, it.message, Toast.LENGTH_SHORT).show()
             }, { //onComplete
                 binding.pbLoading.visibility = View.GONE
                 mRepoAdapter.setItems(repoList)
@@ -74,8 +86,8 @@ open class MainActivity : AppCompatActivity(), ReposAdapter.RepoItemListener {
     }
 
     //recyclerview click listener
-    override fun onItemClick(position: Int) {
-        Toast.makeText(this@MainActivity, "position : $position", Toast.LENGTH_SHORT).show()
+    override fun onItemClick(item: Repo) {
+        item.html_url
     }
 
     override fun onDestroy() {
