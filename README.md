@@ -4,8 +4,8 @@ A simple demo project based on RxJava with Retrofit2.
 
 Libraries used on the sample project
 ------------------------------------
-* RxJava
-* Retrofit2
+* [RxJava](https://github.com/ReactiveX/RxJava)
+* [Retrofit2](https://github.com/square/retrofit)
 * ViewBinding
 
 # Preview
