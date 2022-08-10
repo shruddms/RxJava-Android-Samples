@@ -1,6 +1,7 @@
-package com.kyungeun.rxjava_android_samples.ui
+package com.kyungeun.rxjava_android_samples.ui.main
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -14,6 +15,7 @@ import com.kyungeun.rxjava_android_samples.api.BaseApiService
 import com.kyungeun.rxjava_android_samples.api.RetrofitClient
 import com.kyungeun.rxjava_android_samples.databinding.ActivityMainBinding
 import com.kyungeun.rxjava_android_samples.model.Repo
+import com.kyungeun.rxjava_android_samples.ui.webview.WebViewActivity
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -87,7 +89,9 @@ open class MainActivity : AppCompatActivity(), ReposAdapter.RepoItemListener {
 
     //recyclerview click listener
     override fun onItemClick(item: Repo) {
-        item.html_url
+        val intent = Intent(this, WebViewActivity::class.java)
+        intent.putExtra("link",  item.html_url)
+        startActivity(intent)
     }
 
     override fun onDestroy() {
